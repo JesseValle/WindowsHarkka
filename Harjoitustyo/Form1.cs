@@ -151,5 +151,16 @@ namespace Harjoitustyo
                 loadData();
             }
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            using (var db = new Luokat.PuhelinluetteloContext())
+            {
+                int id = int.Parse(textBox9.Text);
+                Luokat.Henkilo h = db.Henkilot.FirstOrDefault(x => x.HenkiloId == id);
+                db.Henkilot.Remove(h);
+                db.SaveChanges();
+            }
+        }
     }
 }
