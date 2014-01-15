@@ -1,26 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.Entity;
 
 namespace Harjoitustyo
 {
     public partial class Form1 : Form
     {
-        private int selected = -1;
+        private Tuple<char, int> selected = new Tuple<char,int>('x', -1);
 
         public Form1()
         {
             InitializeComponent();
 
             comboBox5.SelectedIndex = 0;
-
-            loadData();
         }
 
         void loadData(bool haku = false)
@@ -32,65 +25,94 @@ namespace Harjoitustyo
 
             using (var db = new Luokat.PuhelinluetteloContext())
             {
-                var query = db.Postitoimipaikat.Select(x=>x);
-
-                foreach (var a in query)
+                if (!db.Database.Exists())
                 {
-                    comboBox4.Items.Add(a.PostiNumero);
-                    comboBox1.Items.Add(a.PostiNumero);
-                    comboBox1.SelectedIndex = 0;
-                    comboBox4.SelectedIndex = 0;
+                    MessageBox.Show("Kantaa ei löydy! Alusta kanta.");
                 }
-
-                var query2 = db.Operaattorit.Select(x=>x);
-
-                foreach (var a in query2)
+                else
                 {
-                    comboBox3.Items.Add(a.OperaattoriNimi);
-                    comboBox2.Items.Add(a.OperaattoriNimi);
-                    comboBox3.SelectedIndex = 0;
-                    comboBox2.SelectedIndex = 0;
-                }
 
-                if (!haku)
-                {
-                    var query3 = from a in db.Henkilot
-                                 from b in db.Postitoimipaikat
-                                 from c in db.Operaattorit
-                                 where a.OperaattoriId == c.Id && a.PostiToimipaikkaId == b.Id
-                                 select new { a.HenkiloId, a.Nimi, a.LahiOsoite, b.PostiNumero, b.PostiToimipaikanNimi, a.PuhNo, c.OperaattoriNimi };
+                    var query = db.Postitoimipaikat.Select(x => x);
 
-                    dataGridView1.DataSource = query3.ToList();
-                    dataGridView1.Columns[0].Visible = false;
-                    dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                }
-                if (!haku && selected >= 0)
-                {
-                    dataGridView1.Rows[this.selected].Selected = true;
-                    dataGridView1.CurrentCell = dataGridView1.Rows[this.selected].Cells[1];
+                    foreach (var a in query)
+                    {
+                        comboBox4.Items.Add(a.PostiNumero);
+                        comboBox1.Items.Add(a.PostiNumero);
+                        comboBox1.SelectedIndex = 0;
+                        comboBox4.SelectedIndex = 0;
+                    }
+
+                    var query2 = db.Operaattorit.Select(x => x);
+
+                    foreach (var a in query2)
+                    {
+                        comboBox3.Items.Add(a.OperaattoriNimi);
+                        comboBox2.Items.Add(a.OperaattoriNimi);
+                        comboBox3.SelectedIndex = 0;
+                        comboBox2.SelectedIndex = 0;
+                    }
+
+                    if (!haku)
+                    {
+                        var query3 = from a in db.Henkilot
+                                     from b in db.Postitoimipaikat
+                                     from c in db.Operaattorit
+                                     where a.OperaattoriId == c.Id && a.PostiToimipaikkaId == b.Id
+                                     select new { a.HenkiloId, a.Nimi, a.LahiOsoite, b.PostiNumero, b.PostiToimipaikanNimi, a.PuhNo, c.OperaattoriNimi };
+
+                        dataGridView1.DataSource = query3.ToList();
+                        dataGridView1.Columns[0].Visible = false;
+                        dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                    }
+
+                    if (selected.Item1 == 'u')
+                    {
+                        dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
+                        dataGridView1.CurrentCell = dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[1];
+                    }
+                    else if (selected.Item1 == 'p')
+                    {
+                        int idx = 0;
+
+                        foreach (DataGridViewRow row in dataGridView1.Rows)
+                        {
+                            if (int.Parse(row.Cells[0].Value.ToString()) == this.selected.Item2)
+                            {
+                                idx = row.Index;
+                                break;
+                            }
+                        }
+
+                        dataGridView1.Rows[idx].Selected = true;
+                        dataGridView1.CurrentCell = dataGridView1.Rows[idx].Cells[1];
+                    }
+                    else
+                    {
+                        dataGridView1.Rows[0].Selected = true;
+                        dataGridView1.CurrentCell = dataGridView1.Rows[0].Cells[1];
+                    }
+
+                    this.selected = new Tuple<char, int>('x', -1);
                 }
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            label24.Visible = true;
 
             using (var db = new Luokat.PuhelinluetteloContext())
             {
-                var blog = new Luokat.Henkilo { LahiOsoite = "asd", Nimi = "asd", OperaattoriId = 1, PostiToimipaikkaId = 1, PuhNo = "1231231234" };
-
-                var jep = new Luokat.Operaattori { OperaattoriNimi = "DNA" };
-
-                var das = new Luokat.PostiToimipaikka { PostiNumero = "70500", PostiToimipaikanNimi = "Kuopio" };
-
-
-                db.Operaattorit.Add(jep);
-                db.Postitoimipaikat.Add(das);
-
-                db.SaveChanges();
-                db.Henkilot.Add(blog);
-                db.SaveChanges();
+                Database.SetInitializer<Luokat.PuhelinluetteloContext>(new Luokat.PuhelinluetteloDbInitializer());
+                db.Database.Initialize(false);
             }
+
+            loadData();
+
+            label24.Visible = false;
+
+            button1.Enabled = false;
+            button8.Enabled = false;
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -145,7 +167,7 @@ namespace Harjoitustyo
 
                     foreach (DataGridViewRow row in dataGridView1.SelectedRows)
                     {
-                        this.selected = row.Index;
+                        this.selected = new Tuple<char, int>('p', id);
                     }
 
                     label17.Text = "Yhteystieto päivitetty";
@@ -164,12 +186,25 @@ namespace Harjoitustyo
             using (var db = new Luokat.PuhelinluetteloContext())
             {
                 int id = int.Parse(textBox9.Text);
-                Luokat.Henkilo h = db.Henkilot.FirstOrDefault(x => x.HenkiloId == id);
-                db.Henkilot.Remove(h);
+                db.Henkilot.Remove(db.Henkilot.FirstOrDefault(x => x.HenkiloId == id));
                 db.SaveChanges();
 
+                this.selected = new Tuple<char, int>('x', -1);
+
                 loadData();
+
+                label25.Text = "Yhteystieto poistettu";
             }
+        }
+
+        private void clearText()
+        {
+            textBox1.Text = string.Empty;
+            textBox2.Text = string.Empty;
+            textBox3.Text = string.Empty;
+            textBox11.Text = string.Empty;
+            textBox12.Text = string.Empty;
+            textBox13.Text = string.Empty;
         }
 
         private void button2_Click_1(object sender, EventArgs e)
@@ -192,7 +227,11 @@ namespace Harjoitustyo
 
                     label18.Text = "Yhteystieto lisätty";
 
+                    this.selected = new Tuple<char, int>('u', 0);
+
                     loadData();
+
+                    clearText();
                 }
             }
             else
@@ -244,11 +283,6 @@ namespace Harjoitustyo
             }
         }
 
-        private void textBox8_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void button6_Click(object sender, EventArgs e)
         {
             if (!textBox11.Text.Trim().Equals(string.Empty))
@@ -270,6 +304,8 @@ namespace Harjoitustyo
                 }
 
                 loadData();
+
+                clearText();
             }
             else
             {
@@ -298,11 +334,27 @@ namespace Harjoitustyo
                 }
 
                 loadData();
+
+                clearText();
             }
             else
             {
                 label23.Text = "Kumpikaan kenttä ei voi olla tyhjä";
             }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            label24.Visible = true;
+
+            this.selected = new Tuple<char, int>('x', -1);
+
+            loadData();
+
+            label24.Visible = false;
+
+            button1.Enabled = false;
+            button8.Enabled = false;
         }
     }
 }
