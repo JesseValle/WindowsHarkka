@@ -77,7 +77,7 @@
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(1019, 178);
+            this.textBox4.Location = new System.Drawing.Point(1019, 136);
             this.textBox4.Name = "textBox4";
             this.textBox4.ReadOnly = true;
             this.textBox4.Size = new System.Drawing.Size(100, 20);
@@ -86,7 +86,7 @@
             // comboBox2
             // 
             this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(1019, 218);
+            this.comboBox2.Location = new System.Drawing.Point(1019, 206);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(121, 21);
             this.comboBox2.TabIndex = 14;
@@ -94,14 +94,15 @@
             // comboBox1
             // 
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(1019, 141);
+            this.comboBox1.Location = new System.Drawing.Point(1019, 99);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(121, 21);
             this.comboBox1.TabIndex = 13;
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged_1);
             // 
             // textBox3
             // 
-            this.textBox3.Location = new System.Drawing.Point(1019, 101);
+            this.textBox3.Location = new System.Drawing.Point(1019, 171);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(100, 20);
             this.textBox3.TabIndex = 12;
@@ -128,6 +129,7 @@
             this.button2.TabIndex = 9;
             this.button2.Text = "Lisää";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // textBox5
             // 

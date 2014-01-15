@@ -116,7 +116,6 @@ namespace Harjoitustyo
                 textBox8.Text = row.Cells[1].Value.ToString();
                 textBox7.Text = row.Cells[2].Value.ToString();
                 textBox6.Text = row.Cells[5].Value.ToString();
-                //textBox5.Text = row.Cells[4].Value.ToString();
                 comboBox4.SelectedItem = comboBox4.Items[comboBox4.FindStringExact(row.Cells[3].Value.ToString())];
                 comboBox3.SelectedItem = comboBox3.Items[comboBox3.FindStringExact(row.Cells[6].Value.ToString())];
             }
@@ -160,6 +159,37 @@ namespace Harjoitustyo
                 Luokat.Henkilo h = db.Henkilot.FirstOrDefault(x => x.HenkiloId == id);
                 db.Henkilot.Remove(h);
                 db.SaveChanges();
+
+                loadData();
+            }
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            using ( var db = new Luokat.PuhelinluetteloContext())
+            {
+                string temp = comboBox1.SelectedItem.ToString();
+                int pId = db.Postitoimipaikat.FirstOrDefault(x=> x.PostiNumero.Equals(temp)).Id;
+
+                temp = comboBox2.SelectedItem.ToString();
+                int oId = db.Operaattorit.FirstOrDefault(x => x.OperaattoriNimi.Equals(temp)).Id;
+
+                var h = new Luokat.Henkilo { LahiOsoite = textBox2.Text, Nimi = textBox1.Text, PuhNo = textBox3.Text, PostiToimipaikkaId = pId, OperaattoriId = oId };
+
+                db.Henkilot.Add(h);
+
+                db.SaveChanges();
+
+                loadData();
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            using (var db = new Luokat.PuhelinluetteloContext())
+            {
+                string sel = comboBox1.SelectedItem.ToString();
+                textBox4.Text = db.Postitoimipaikat.FirstOrDefault(x => x.PostiNumero.Equals(sel)).PostiToimipaikanNimi;
             }
         }
     }
